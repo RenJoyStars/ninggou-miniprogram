@@ -1,0 +1,373 @@
+/* ============================================================
+   宁狗在哪 · 小程序端样式 · v3.0
+   设计基调对齐 Apple「查找」：系统字号阶梯、4pt 栅格、发丝线 + 柔和投影
+   ⚠ 与网页版 style.css 共用同一套变量与尺寸，改动请双端同步
+   ============================================================ */
+
+/* ---------- 设计变量 ---------- */
+page, body {
+  --bg: #f2f2f7;
+  --card: #ffffff;
+  --text: #1c1c1e;
+  --text2: #8a8a8e;
+  --text3: #aeaeb2;
+  --accent: #007aff;
+  --green: #34c759;
+  --accent-soft: rgba(0, 122, 255, .14);
+  --green-soft: rgba(52, 199, 89, .14);
+  --hairline: rgba(60, 60, 67, .12);
+  --ctrl-bg: rgba(255, 255, 255, .94);
+  --pressed: rgba(0, 0, 0, .05);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, .04), 0 12px 28px -16px rgba(0, 0, 0, .3);
+  --shadow-ctrl: 0 3px 10px rgba(0, 0, 0, .1);
+  --spinner-track: #e5e5ea;
+}
+
+@media (prefers-color-scheme: dark) {
+  page, body {
+    --bg: #000000;
+    --card: #1c1c1e;
+    --text: #ffffff;
+    --text2: #98989f;
+    --text3: #6e6e73;
+    --accent: #0a84ff;
+    --green: #30d158;
+    --accent-soft: rgba(10, 132, 255, .2);
+    --green-soft: rgba(48, 209, 88, .2);
+    --hairline: rgba(84, 84, 88, .55);
+    --ctrl-bg: rgba(44, 44, 46, .94);
+    --pressed: rgba(255, 255, 255, .1);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, .5), 0 12px 28px -16px rgba(0, 0, 0, .9);
+    --shadow-ctrl: 0 3px 10px rgba(0, 0, 0, .5);
+    --spinner-track: #3a3a3c;
+  }
+}
+
+/* JS 兜底：部分安卓 webview 不响应 prefers-color-scheme，
+   home.js 读到 theme 后挂 .theme-dark，把同一套暗色变量再铺一遍。
+   两套并存不冲突 —— 值完全相同，谁生效都一样。 */
+.theme-dark {
+  --bg: #000000;
+  --card: #1c1c1e;
+  --text: #ffffff;
+  --text2: #98989f;
+  --text3: #6e6e73;
+  --accent: #0a84ff;
+  --green: #30d158;
+  --accent-soft: rgba(10, 132, 255, .2);
+  --green-soft: rgba(48, 209, 88, .2);
+  --hairline: rgba(84, 84, 88, .55);
+  --ctrl-bg: rgba(44, 44, 46, .94);
+  --pressed: rgba(255, 255, 255, .1);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, .5), 0 12px 28px -16px rgba(0, 0, 0, .9);
+  --shadow-ctrl: 0 3px 10px rgba(0, 0, 0, .5);
+  --spinner-track: #3a3a3c;
+}
+
+/* ---------- 基础 ---------- */
+page {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-text-size-adjust: 100%;
+}
+
+.page {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ---------- 加载态 / 空态 ---------- */
+.fullpage {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0 40px;
+  box-sizing: border-box;
+  background: var(--bg);
+}
+
+.spinner {
+  width: 26px;
+  height: 26px;
+  margin-bottom: 14px;
+  border: 2.5px solid var(--spinner-track);
+  border-top-color: var(--text3);
+  border-radius: 50%;
+  -webkit-animation: spin .72s linear infinite;
+  animation: spin .72s linear infinite;
+}
+@-webkit-keyframes spin { to { -webkit-transform: rotate(1turn); } }
+@keyframes spin { to { transform: rotate(1turn); } }
+
+.spinner-text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text2);
+}
+
+.empty-avatar {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 18px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+}
+.empty-title {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
+}
+.empty-desc {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--text2);
+}
+
+.btn-primary {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  margin-top: 26px;
+  width: 200px;
+  height: 46px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: .2px;
+}
+.btn-hover { opacity: .78; }
+
+/* ---------- 地图卡片 ---------- */
+.card {
+  margin: 0 12px;
+  background: var(--card);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.card-head {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  height: 52px;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 50%;
+  -webkit-flex-shrink: 0;
+  flex-shrink: 0;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.card-name {
+  -webkit-flex-shrink: 0;
+  flex-shrink: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.card-label {
+  margin-left: auto;
+  padding-left: 8px;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--text2);
+  white-space: nowrap;
+}
+
+/* 时间胶囊：固定绿色，不再随时间变色 */
+.pill {
+  margin-left: 6px;
+  -webkit-flex-shrink: 0;
+  flex-shrink: 0;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 11px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 22px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+/* ---------- 地图 ---------- */
+.map-wrap {
+  position: relative;
+  border-top: 1px solid var(--hairline);
+  overflow: hidden;
+}
+
+/* 手势锁：几乎透明但能接收触摸，等于盖住地图的原生手势
+   注意：它排在 <map> 内最前面，后面的 cover-view 才压在它上面 */
+.touch-blocker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.001);
+}
+
+/* 浮动小狗图钉：在深色下排在 touch-blocker 之后，浮在暗色地图之上保持 100% 鲜亮。
+   尺寸 60x77，anchorX:0.5 (30px), anchorY:0.8333 (64px 尖角地面点)
+   尖角精确对齐地图几何中心 (50%, 50%) */
+.pin-marker {
+  position: absolute;
+  left: calc(50% - 30px);
+  top: calc(50% - 64px);
+  width: 60px;
+  height: 77px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* 深色底图遮罩（分支 1 方案）：
+   利用 cover-view 手势锁作为全图暗化蒙版。
+   实测 map 原生组件不吃 CSS filter，但内部 cover-view 的 background-color 可以在真机原生层正常渲染，
+   从而将刺眼的白底地图压暗为深色夜间调。 */
+@media (prefers-color-scheme: dark) {
+  .touch-blocker {
+    background-color: rgba(10, 14, 23, 0.72);
+  }
+  .zoom {
+    border-color: rgba(84, 84, 88, 0.55);
+    background-color: rgba(44, 44, 46, 0.94);
+  }
+  .zoom-hr {
+    background-color: rgba(84, 84, 88, 0.55);
+  }
+}
+
+.theme-dark .touch-blocker {
+  background-color: rgba(10, 14, 23, 0.72);
+}
+.theme-dark .zoom {
+  border-color: rgba(84, 84, 88, 0.55);
+  background-color: rgba(44, 44, 46, 0.94);
+}
+.theme-dark .zoom-hr {
+  background-color: rgba(84, 84, 88, 0.55);
+}
+
+/* ---------- 缩放功能条 ----------
+   这一组是 <cover-view>，在 map 原生层上渲染，只支持有限样式：
+   不能用 CSS 变量、backdrop-filter、box-shadow，颜色必须写死。 */
+.zoom {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 44px;
+  border-radius: 13px;
+  border: 1px solid rgba(60, 60, 67, 0.14);
+  background-color: rgba(255, 255, 255, 0.96);
+  overflow: hidden;
+}
+
+.zoom-btn {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  width: 100%;
+  height: 44px;
+}
+.zoom-hover { background-color: rgba(120, 120, 128, 0.2); }
+
+.zoom-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.zoom-hr {
+  height: 1px;
+  margin: 0 9px;
+  background-color: rgba(60, 60, 67, 0.14);
+}
+
+/* ---------- 页脚 ---------- */
+.footer {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  -webkit-flex-shrink: 0;
+  flex-shrink: 0;
+  gap: 14px;
+  padding: 14px 24px calc(14px + env(safe-area-inset-bottom));
+  background: var(--bg);
+}
+
+.footer-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 15px;
+  -webkit-flex-shrink: 0;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+}
+
+.footer-texts {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+}
+
+.footer-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text);
+}
+.footer-sub {
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text2);
+}
+.footer-copy {
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text3);
+}

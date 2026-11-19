@@ -1,0 +1,15 @@
+{
+  "pages": [
+    "pages/home/home"
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "navigationBarTitleText": "宁狗在哪",
+    "backgroundColor": "#f2f2f7"
+  },
+  "darkmode": true,
+  "themeLocation": "theme.json",
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json"
+}

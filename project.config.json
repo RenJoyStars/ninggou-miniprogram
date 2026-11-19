@@ -1,0 +1,18 @@
+{
+  "appid": "touristappid",
+  "projectname": "ninggou-miniprogram",
+  "compileType": "miniprogram",
+  "libVersion": "3.16.2",
+  "setting": {
+    "urlCheck": false,
+    "coverView": true,
+    "es6": true,
+    "postcss": true,
+    "minified": true,
+    "enhance": true,
+    "showShadowRootInWxmlPanel": true,
+    "packNpmManually": false,
+    "ignoreUploadUnusedFiles": true
+  },
+  "condition": {}
+}

@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# WeChat DevTools private config & cache
+project.private.config.json
+.vscode/
+node_modules/
