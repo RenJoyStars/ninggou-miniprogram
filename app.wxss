@@ -1,10 +1,10 @@
 /* ============================================================
-   宁狗在哪 · 全局样式 · v2.0
+   宁狗在哪 · 全局样式 · v3.2
    ⚠ 字体栈与网页版 style.css 保持一致，改一边要同步另一边
    ============================================================ */
 
 page, body {
-  background-color: #f2f3f7;
+  background-color: #f2f2f7;
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
   -webkit-font-smoothing: antialiased;
 }

@@ -1,69 +1,81 @@
 <!-- ============================================================
-     宁狗在哪 · 小程序端结构 · v3.1
-     ⚠ 与网页版 index.html 一一对应，改一边必须同步另一边
+     宁狗在哪 · 小程序端结构 · v3.2
      ⚠ <text> 内的文字必须写在同一行，中间带换行会被渲染成两个文本行
      ⚠ 缩放条必须是 <cover-view> 且必须放在 <map> 内部、手势锁之后。
        map 是原生组件，它外面的普通 <view> 会被原生层盖住 —— 看得见，点不到。
-       （网页版反过来，必须放 map 容器外，两端的规则正好相反）
+     ⚠ 图钉 <cover-image> 放在 <map> 外（.map-wrap 内），浅/深色统一走同管线，
+       与地图缩放重绘彻底隔离，零高频 markers 通信、零闪烁。
      ============================================================ -->
 
 <!-- 加载态 -->
-<view wx:if="{{loading}}" class="fullpage {{isDark ? 'theme-dark' : ''}}">
+<view wx:if="{{loading}}" class="fullpage {{isDark ? 'theme-dark' : ''}} {{sizeClass}}">
   <view class="spinner"></view>
   <text class="spinner-text">正在加载…</text>
 </view>
 
-<!-- 空态 -->
-<view wx:elif="{{!hasData}}" class="fullpage {{isDark ? 'theme-dark' : ''}}">
+<!-- 空态 / 首次加载失败态 -->
+<view wx:elif="{{!hasData}}" class="fullpage {{isDark ? 'theme-dark' : ''}} {{sizeClass}}">
   <image class="empty-avatar" src="/images/dog-icon.png" mode="aspectFill"></image>
-  <text class="empty-title">暂无位置数据</text>
-  <text class="empty-desc">主人在小程序里打开一次，这里就能看到宁狗的位置</text>
-  <view class="btn-primary" hover-class="btn-hover" bindtap="loadData">重新加载</view>
+  <text class="empty-title">{{loadError ? '加载失败' : '暂无位置数据'}}</text>
+  <text class="empty-desc">{{loadError ? '请检查网络连接后重试' : '主人在小程序里打开一次，这里就能看到宁狗的位置'}}</text>
+  <view class="btn-primary" hover-class="btn-hover" bindtap="onManualRefresh">重新加载</view>
 </view>
 
 <!-- 主界面 -->
-<view wx:else class="page {{isDark ? 'theme-dark' : ''}}">
+<view wx:else class="page {{isDark ? 'theme-dark' : ''}} {{isIOS ? 'platform-ios' : 'platform-android'}} {{sizeClass}}">
 
-  <view class="card" style="margin-top:{{topGap}}px;">
-    <view class="card-head">
-      <view class="dot"></view>
-      <text class="card-name">宁狗</text>
-      <text wx:if="{{timeText}}" class="card-label">最后更新于</text>
-      <view wx:if="{{timeText}}" class="pill">{{timeText}}</view>
+  <view class="shell" style="padding-top:{{topGap}}px;">
+    <view class="card">
+      <view class="card-head">
+        <view class="dot-wrap">
+          <view class="dot-ring"></view>
+          <view class="dot"></view>
+        </view>
+        <text class="card-name">宁狗</text>
+
+        <view class="head-right">
+          <text wx:if="{{timeText}}" class="card-label">更新于</text>
+          <view wx:if="{{timeText}}" class="pill" hover-class="pill-hover" bindtap="toggleTimeMode">{{timeText}}</view>
+          <view class="refresh-btn {{refreshing ? 'is-spinning' : ''}}" hover-class="refresh-hover" bindtap="onManualRefresh" aria-label="刷新位置">
+            <view class="refresh-ring"></view>
+          </view>
+        </view>
+      </view>
+
+      <view class="map-wrap">
+        <!-- 深色下底图由微信与平台分档蒙版共同处理：iOS 轻压暗保留路网，Android 完整压暗 -->
+        <map id="myMap" class="map-canvas" latitude="{{latitude}}" longitude="{{longitude}}" scale="{{mapScale}}" enable-scroll="{{false}}" enable-zoom="{{false}}" enable-rotate="{{false}}" enable-overlooking="{{false}}" show-location="{{false}}">
+
+          <!-- 手势锁：吞掉地图上的拖动与捏合，深色下充当底图暗化蒙版 -->
+          <cover-view class="touch-blocker"></cover-view>
+
+          <!-- 缩放功能条：单节点原生渲染，带边界禁用态反馈 -->
+          <cover-view class="zoom">
+            <cover-view class="zoom-btn {{mapScale >= 20 ? 'zoom-disabled' : ''}}" hover-class="{{mapScale >= 20 ? '' : 'zoom-hover'}}" bindtap="mapZoomIn">
+              <cover-image class="zoom-icon" src="{{isDark ? '/images/icon-plus-white.png' : '/images/icon-plus.png'}}"></cover-image>
+            </cover-view>
+            <cover-view class="zoom-hr"></cover-view>
+            <cover-view class="zoom-btn {{mapScale <= 3 ? 'zoom-disabled' : ''}}" hover-class="{{mapScale <= 3 ? '' : 'zoom-hover'}}" bindtap="mapZoomOut">
+              <cover-image class="zoom-icon" src="{{isDark ? '/images/icon-minus-white.png' : '/images/icon-minus.png'}}"></cover-image>
+            </cover-view>
+          </cover-view>
+
+        </map>
+
+        <!-- 浅/深色统一浮动图钉：与地图缩放重绘彻底物理隔离，零 markers 通信开销、绝不闪烁 -->
+        <cover-image class="pin-marker" src="{{pinIcon}}"></cover-image>
+      </view>
     </view>
 
-    <view class="map-wrap" style="height:{{mapHeight}}px;">
-      <!-- 深色下底图由微信自己处理：app.json 声明了 darkmode，iOS 上 map 会自动压暗一层；
-           实测 CSS filter 对原生组件在真机无效（仅开发者工具伪生效），别再往上加滤镜 -->
-      <map id="myMap" latitude="{{latitude}}" longitude="{{longitude}}" markers="{{markers}}" scale="{{mapScale}}" enable-scroll="{{false}}" enable-zoom="{{false}}" enable-rotate="{{false}}" enable-overlooking="{{false}}" show-location="{{false}}" style="width:100%;height:100%;">
-
-        <!-- 手势锁：吞掉地图上的拖动与捏合，深色下充当底图暗化蒙版 -->
-        <cover-view class="touch-blocker"></cover-view>
-
-        <!-- 缩放功能条：单节点原生渲染，杜绝 hover-class 触发的图层交替闪烁 -->
-        <cover-view class="zoom">
-          <cover-view class="zoom-btn" hover-class="zoom-hover" bindtap="mapZoomIn">
-            <cover-image class="zoom-icon" src="{{isDark ? '/images/icon-plus-white.png' : '/images/icon-plus.png'}}"></cover-image>
-          </cover-view>
-          <cover-view class="zoom-hr"></cover-view>
-          <cover-view class="zoom-btn" hover-class="zoom-hover" bindtap="mapZoomOut">
-            <cover-image class="zoom-icon" src="{{isDark ? '/images/icon-minus-white.png' : '/images/icon-minus.png'}}"></cover-image>
-          </cover-view>
-        </cover-view>
-
-      </map>
-
-      <!-- 浮动小狗图钉：移到 map 标签外（.map-wrap 内），与地图缩放重绘管线彻底物理隔离，绝不闪烁 -->
-      <cover-image wx:if="{{isDark}}" class="pin-marker" src="{{pinIcon}}"></cover-image>
-    </view>
-  </view>
-
-  <view class="footer">
-    <image class="footer-icon" src="/images/dog-icon.png" mode="aspectFill"></image>
-    <view class="footer-texts">
-      <text class="footer-title">宁狗在哪</text>
-      <text class="footer-sub">实时查询宁狗所在位置</text>
-      <text class="footer-copy">© 2026 RenJoy</text>
+    <view class="footer">
+      <image class="footer-icon" src="/images/dog-icon.png" mode="aspectFill"></image>
+      <view class="footer-texts">
+        <view class="footer-title-row">
+          <text class="footer-title">宁狗在哪</text>
+          <text class="footer-copy">© 2026 RenJoy</text>
+        </view>
+        <text class="footer-sub">实时查询宁狗所在位置</text>
+      </view>
     </view>
   </view>
 </view>
