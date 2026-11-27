@@ -17,7 +17,7 @@
 <view wx:elif="{{!hasData}}" class="fullpage {{isDark ? 'theme-dark' : ''}} {{sizeClass}}">
   <image class="empty-avatar" src="/images/dog-icon.png" mode="aspectFill"></image>
   <text class="empty-title">{{loadError ? '加载失败' : '暂无位置数据'}}</text>
-  <text class="empty-desc">{{loadError ? '请检查网络连接后重试' : '主人在小程序里打开一次，这里就能看到宁狗的位置'}}</text>
+  <text class="empty-desc">{{loadError ? '请检查网络连接后重试' : '等待位置同步中，请稍后刷新查看'}}</text>
   <view class="btn-primary" hover-class="btn-hover" bindtap="onManualRefresh">重新加载</view>
 </view>
 
@@ -37,7 +37,7 @@
           <text wx:if="{{timeText}}" class="card-label">更新于</text>
           <view wx:if="{{timeText}}" class="pill" hover-class="pill-hover" bindtap="toggleTimeMode">{{timeText}}</view>
           <view class="refresh-btn {{refreshing ? 'is-spinning' : ''}}" hover-class="refresh-hover" bindtap="onManualRefresh" aria-label="刷新位置">
-            <view class="refresh-ring"></view>
+            <image class="refresh-icon" src="{{isDark ? '/images/icon-refresh-white.png' : '/images/icon-refresh.png'}}" mode="aspectFit"></image>
           </view>
         </view>
       </view>

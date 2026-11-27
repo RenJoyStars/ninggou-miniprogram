@@ -1,15 +1,18 @@
 /* ============================================================
-   宁狗在哪 · 小程序端 · v3.2
-   - Flex 弹性布局 + 四档机型比例分类（compact / regular / large / wide）
-   - 浅/深色统一 cover-image 水波纹图钉，消除高频 markers 跨层通信
-   - 支持手动刷新、时间胶囊相对/绝对切换、缩放边界态与轻触感反馈
+   宁狗在哪 · 小程序端 · v3.4
+   - Flex 弹性布局 + 五档机型比例分类（mini / compact / regular / large / tablet）
+   - 浅/深色统一 cover-image 水波纹图钉，采用呼吸间歇周期降低跨层通信耗电
+   - 支持手动刷新、时间胶囊相对/绝对切换（本地记忆）、缩放边界态与轻触感反馈
    ============================================================ */
 var APP = getApp();
 var SERVER = APP.globalData.serverUrl;
 
 var PULSE_MS = 170;             // 水波纹帧间隔，8 帧 ≈ 1.36 秒一轮
+var PULSE_ROUNDS = 2;           // 每次呼吸连播 2 轮（约 2.7 秒）
+var PULSE_REST_MS = 2400;       // 呼吸间歇静默 2.4 秒，大幅降低持续 setData 耗电
 var REQUEST_TIMEOUT = 10000;    // 10 秒超时，避免弱网死等
 var TIME_TICK_MS = 60000;       // 停留页面每分钟更新一次相对时间
+var TIME_MODE_KEY = 'ninggou_time_mode';
 
 var PULSE_FRAMES = [
   'marker-p0', 'marker-p1', 'marker-p2', 'marker-p3',
@@ -82,6 +85,7 @@ Page({
   onLoad: function () {
     this._initPlatform();
     this._initTheme();
+    this._initTimeMode();
     this._calcLayout();
   },
 
@@ -200,17 +204,27 @@ Page({
     }
   },
 
-  /* ---------- 水波纹动画（统一走 cover-image，零 markers 跨层通信） ---------- */
+  /* ---------- 水波纹动画（统一走 cover-image，呼吸间歇周期降耗） ---------- */
   _startPulse: function () {
     var self = this;
-    if (self._pulseTimer || !self.data.hasData) return;
-    var i = self._pulseIndex || 0;
+    if (self._pulseTimer || self._pulseRestTimer || !self.data.hasData) return;
+    var steps = 0;
+    var maxSteps = PULSE_FRAMES.length * PULSE_ROUNDS;
     self._pulseTimer = setInterval(function () {
-      i = (i + 1) % PULSE_FRAMES.length;
-      self._pulseIndex = i;
+      var idx = steps % PULSE_FRAMES.length;
+      steps += 1;
       self.setData({
-        pinIcon: '/images/' + PULSE_FRAMES[i] + '.png'
+        pinIcon: '/images/' + PULSE_FRAMES[idx] + '.png'
       });
+      if (steps >= maxSteps) {
+        clearInterval(self._pulseTimer);
+        self._pulseTimer = null;
+        self.setData({ pinIcon: '/images/marker-static.png' });
+        self._pulseRestTimer = setTimeout(function () {
+          self._pulseRestTimer = null;
+          self._startPulse();
+        }, PULSE_REST_MS);
+      }
     }, PULSE_MS);
   },
 
@@ -219,9 +233,22 @@ Page({
       clearInterval(this._pulseTimer);
       this._pulseTimer = null;
     }
+    if (this._pulseRestTimer) {
+      clearTimeout(this._pulseRestTimer);
+      this._pulseRestTimer = null;
+    }
   },
 
-  /* ---------- 时间保鲜 ---------- */
+  /* ---------- 时间保鲜与偏好记忆 ---------- */
+  _initTimeMode: function () {
+    try {
+      var saved = wx.getStorageSync(TIME_MODE_KEY);
+      if (saved === 'relative' || saved === 'clock') {
+        this.setData({ timeMode: saved });
+      }
+    } catch (e) { /* 忽略存储异常 */ }
+  },
+
   _refreshTimeText: function () {
     if (!this._parsedTime) return;
     var next = this.data.timeMode === 'relative'
@@ -252,6 +279,7 @@ Page({
     hapticLight();
     var nextMode = this.data.timeMode === 'clock' ? 'relative' : 'clock';
     this.setData({ timeMode: nextMode });
+    try { wx.setStorageSync(TIME_MODE_KEY, nextMode); } catch (e) { /* 忽略 */ }
     this._refreshTimeText();
   },
 

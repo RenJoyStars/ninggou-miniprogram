@@ -117,13 +117,14 @@ page, body {
   margin-left: 4px;
 }
 .layout-mini .refresh-btn {
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
   margin-left: 4px;
 }
-.layout-mini .refresh-ring {
-  width: 10px;
-  height: 10px;
+.layout-mini .refresh-icon {
+  width: 13px;
+  height: 13px;
 }
 .layout-mini .footer-sub,
 .layout-mini .footer-copy {
@@ -423,12 +424,12 @@ page {
 }
 .pill-hover { opacity: .72; }
 
-/* 卡片头部轻量刷新按钮 */
+/* 卡片头部刷新按钮（放大触控热区防误触时间胶囊） */
 .refresh-btn {
   margin-left: 6px;
-  width: 26px;
-  height: 26px;
-  border-radius: 13px;
+  width: 34px;
+  height: 34px;
+  border-radius: 17px;
   display: -webkit-flex;
   display: flex;
   -webkit-align-items: center;
@@ -441,18 +442,13 @@ page {
 }
 .refresh-hover { opacity: .65; }
 
-.refresh-ring {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 1.8px solid var(--text2);
-  border-top-color: transparent;
-  box-sizing: border-box;
+.refresh-icon {
+  width: 15px;
+  height: 15px;
+  display: block;
 }
 
-.refresh-btn.is-spinning .refresh-ring {
-  border-color: var(--accent);
-  border-top-color: transparent;
+.refresh-btn.is-spinning .refresh-icon {
   -webkit-animation: spin .72s linear infinite;
   animation: spin .72s linear infinite;
 }
